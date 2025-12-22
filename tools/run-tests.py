@@ -175,7 +175,7 @@ def run_jit_tests(engine):
     print('%sFAIL : %d%s' % (COLOR_RED, fail_total, COLOR_RESET))
 
     if fail_total > 0:
-        raise Exception("basic wasm-test-core failed")
+        raise Exception("jit tests failed")
 
 @runner('wasm-test-extended', default=True)
 def run_extended_tests(engine):
@@ -199,7 +199,7 @@ def run_extended_tests(engine):
     global web_assembly3
     TEST_DIR = join(PROJECT_SOURCE_DIR, 'test', 'web-assembly3')
 
-    print('Running wasm-extended tests:')
+    print('Running wasm-test-web-assembly3 tests:')
     xpass = glob(join(TEST_DIR, '**/*.wast'), recursive=True)
     web_assembly3 = True
     xpass_result = _run_wast_tests(engine, xpass, False)
@@ -212,7 +212,27 @@ def run_extended_tests(engine):
     print('%sFAIL : %d%s' % (COLOR_RED, fail_total, COLOR_RESET))
 
     if fail_total > 0:
-        raise Exception("wasm-test-web-assembly3 failed")
+        raise Exception("wasm-test-web-assembly3 tests failed")
+
+@runner('webassembly-testsuite', default=True)
+def run_extended_tests(engine):
+    global web_assembly3
+    TEST_DIR = join(PROJECT_SOURCE_DIR, 'test', 'testsuite')
+
+    print('Running webassembly-testsuite tests:')
+    xpass = glob(join(TEST_DIR, '**/*.wast'), recursive=True)
+    web_assembly3 = True
+    xpass_result = _run_wast_tests(engine, xpass, False)
+    web_assembly3 = False
+
+    tests_total = len(xpass)
+    fail_total = xpass_result
+    print('TOTAL: %d' % (tests_total))
+    print('%sPASS : %d%s' % (COLOR_GREEN, tests_total - fail_total, COLOR_RESET))
+    print('%sFAIL : %d%s' % (COLOR_RED, fail_total, COLOR_RESET))
+
+    if fail_total > 0:
+        raise Exception("webassembly-testsuite tests failed")
 
 def main():
     parser = ArgumentParser(description='Walrus Test Suite Runner')
