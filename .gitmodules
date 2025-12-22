@@ -14,3 +14,6 @@
 	path = third_party/uvwasi/uvwasi
 	url = https://github.com/nodejs/uvwasi
 	ignore = untracked
+[submodule "test/testsuite"]
+	path = test/testsuite
+	url = https://github.com/WebAssembly/testsuite.git
