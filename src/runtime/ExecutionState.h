@@ -146,7 +146,12 @@ private:
 #else
         m_stackLimit = m_stackLimit + STACK_LIMIT_FROM_BASE;
 #endif
+        clampStackLimitToCurrentThreadStack();
     }
+
+    // Keep the limit at least STACK_LIMIT_FROM_END inside the current
+    // thread's stack so that the check fires on small-stacked threads.
+    void clampStackLimitToCurrentThreadStack();
 
     static void deallocateBuffer(uint8_t* buffer)
     {
