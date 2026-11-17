@@ -235,7 +235,7 @@ static bool isFloatGlobal(uint32_t globalIndex, Module* module)
     OL2(OTGCOp1, /* SD / SS */ PTR, I32)                                                  \
     OL2(OTGCOp1Rev, /* SD */ I32, PTR)                                                    \
     OL2(OTGCCastDefined, /* ST */ PTR, PTR)                                               \
-    OL2(OTGCRefTestDefined, /* SD */ PTR, PTR | TMP | S0)                                 \
+    OL2(OTGCRefTestDefined, /* SD */ PTR, I32 | TMP | S0)                                 \
     OL4(OTGCArrayMoveI32, /* SSDT / SSST */ PTR, I32, I32, PTR)                           \
     OL4(OTGCArrayMoveI64, /* SSDT / SSST */ PTR, I32, I64, PTR)                           \
     OL4(OTGCArrayMovePtr, /* SSDT / SSST */ PTR, I32, PTR, PTR)                           \
