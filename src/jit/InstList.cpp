@@ -421,7 +421,7 @@ void JITCompiler::insertStackInitList(InstructionListItem* prev, size_t variable
         VariableList::Variable& variable = m_variableList->variables[ref];
 
         if (variable.reg1 != VariableList::kUnusedReg) {
-            prev = insertStackInit(prev, variable, i);
+            prev = insertStackInit(prev, variable, ref);
         }
     }
 }
