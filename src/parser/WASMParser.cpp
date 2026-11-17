@@ -3354,7 +3354,8 @@ public:
     {
         const Walrus::ArrayType* dstTypeInfo = m_result.m_compositeTypes[dst_type_index]->asArray();
         const Walrus::ArrayType* srcTypeInfo = m_result.m_compositeTypes[src_type_index]->asArray();
-        ASSERT(dstTypeInfo->field().type() == srcTypeInfo->field().type());
+        ASSERT(Walrus::GCArray::getLog2Size(dstTypeInfo->field().type())
+               == Walrus::GCArray::getLog2Size(srcTypeInfo->field().type()));
         const uint8_t log2Size = Walrus::GCArray::getLog2Size(dstTypeInfo->field().type());
         ASSERT(peekVMStackValueType() == Walrus::Value::Type::I32);
         auto src4 = popVMStack();
