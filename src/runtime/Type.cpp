@@ -44,14 +44,27 @@ bool Type::isSubType(const Type& expected) const
         return false;
     }
 
+    if (Value::isNullableRefType(actualType) && !Value::isNullableRefType(expectedType)) {
+        return false;
+    }
+
     actualType = Value::toNonNullableRefType(actualType);
     expectedType = Value::toNonNullableRefType(expectedType);
 
     if (expectedType == Value::DefinedRef) {
         if (actualType == Value::DefinedRef) {
-            return expected.ref()->isSubTypeOf(ref()) && (!Value::isNullableRefType(expected.type()) || Value::isNullableRefType(type()));
+            return expected.ref()->isSubTypeOf(ref());
         }
-        expectedType = toGenericType(expected.ref());
+
+        switch (expected.ref()->kind()) {
+        case ObjectType::FunctionKind:
+            return actualType == Value::NoFuncRef;
+        case ObjectType::StructKind:
+        case ObjectType::ArrayKind:
+            return actualType == Value::NoAnyRef;
+        default:
+            ASSERT_NOT_REACHED();
+        }
     }
 
     if (actualType == Value::DefinedRef) {
@@ -60,12 +73,12 @@ bool Type::isSubType(const Type& expected) const
 
     switch (expectedType) {
     case Value::AnyRef:
-        if (actualType == Value::AnyRef) {
+        if (actualType == Value::AnyRef || actualType == Value::NoAnyRef || actualType == Value::EqRef || actualType == Value::I31Ref || actualType == Value::StructRef || actualType == Value::ArrayRef) {
             break;
         }
         return false;
     case Value::NoAnyRef:
-        if (actualType == Value::AnyRef || actualType == Value::NoAnyRef || actualType == Value::EqRef || actualType == Value::I31Ref || actualType == Value::StructRef || actualType == Value::ArrayRef) {
+        if (actualType == Value::NoAnyRef) {
             break;
         }
         return false;
@@ -90,29 +103,39 @@ bool Type::isSubType(const Type& expected) const
         }
         return false;
     case Value::ExternRef:
-        if (actualType == Value::ExternRef) {
-            break;
-        }
-        return false;
-    case Value::NoExternRef:
         if (actualType == Value::ExternRef || actualType == Value::NoExternRef) {
             break;
         }
         return false;
+    case Value::NoExternRef:
+        if (actualType == Value::NoExternRef) {
+            break;
+        }
+        return false;
     case Value::FuncRef:
-        if (actualType == Value::FuncRef) {
+        if (actualType == Value::FuncRef || actualType == Value::NoFuncRef) {
+            break;
+        }
+        return false;
+    case Value::NoFuncRef:
+        if (actualType == Value::NoFuncRef) {
+            break;
+        }
+        return false;
+    case Value::ExnRef:
+        if (actualType == Value::ExnRef || actualType == Value::NoExnRef) {
             break;
         }
         return false;
     default:
-        ASSERT(expectedType == Value::NoFuncRef);
-        if (actualType == Value::FuncRef || actualType == Value::NoFuncRef) {
+        ASSERT(expectedType == Value::NoExnRef);
+        if (actualType == Value::NoExnRef) {
             break;
         }
         return false;
     }
 
-    return !Value::isNullableRefType(expected.type()) || Value::isNullableRefType(type());
+    return true;
 }
 
 } // namespace Walrus

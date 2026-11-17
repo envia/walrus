@@ -307,34 +307,39 @@ static Trap::TrapResult executeModule(Store* store, Module* module,
 #endif
         } else if (registeredInstanceMap) {
             auto iter = registeredInstanceMap->find(import->moduleName());
-            if (iter != registeredInstanceMap->end()) {
-                Instance* instance = iter->second;
-                auto e = instance->resolveExportType(import->fieldName());
-                if (e == nullptr) {
-                    printf("Error: %s:%s module has not been found.\n", import->fieldName().c_str(), import->moduleName().c_str());
-                    RELEASE_ASSERT_NOT_REACHED();
-                }
-                switch (e->exportType()) {
-                case ExportType::Function:
-                    importValues.push_back(instance->resolveExportFunction(import->fieldName()));
-                    break;
-                case ExportType::Tag:
-                    importValues.push_back(instance->resolveExportTag(import->fieldName()));
-                    break;
-                case ExportType::Table:
-                    importValues.push_back(instance->resolveExportTable(import->fieldName()));
-                    break;
-                case ExportType::Memory:
-                    importValues.push_back(instance->resolveExportMemory(import->fieldName()));
-                    break;
-                case ExportType::Global:
-                    importValues.push_back(instance->resolveExportGlobal(import->fieldName()));
-                    break;
-                default:
-                    printf("Error: unsupported export type: %s\n", import->moduleName().c_str());
-                    RELEASE_ASSERT_NOT_REACHED();
-                    break;
-                }
+            if (iter == registeredInstanceMap->end()) {
+                Trap::TrapResult result;
+                result.exception = Exception::create("unknown import");
+                return result;
+            }
+
+            Instance* instance = iter->second;
+            auto e = instance->resolveExportType(import->fieldName());
+            if (e == nullptr) {
+                Trap::TrapResult result;
+                result.exception = Exception::create("unknown import");
+                return result;
+            }
+            switch (e->exportType()) {
+            case ExportType::Function:
+                importValues.push_back(instance->resolveExportFunction(import->fieldName()));
+                break;
+            case ExportType::Tag:
+                importValues.push_back(instance->resolveExportTag(import->fieldName()));
+                break;
+            case ExportType::Table:
+                importValues.push_back(instance->resolveExportTable(import->fieldName()));
+                break;
+            case ExportType::Memory:
+                importValues.push_back(instance->resolveExportMemory(import->fieldName()));
+                break;
+            case ExportType::Global:
+                importValues.push_back(instance->resolveExportGlobal(import->fieldName()));
+                break;
+            default:
+                printf("Error: unsupported export type: %s\n", import->moduleName().c_str());
+                RELEASE_ASSERT_NOT_REACHED();
+                break;
             }
         }
     }
@@ -1157,7 +1162,7 @@ static void executeWAST(Store* store, const std::string& filename, const std::ve
             } else {
                 buf = dsm->data;
             }
-            auto trapResult = executeWASM(store, filename, buf);
+            auto trapResult = executeWASM(store, filename, buf, &registeredInstanceMap);
             if (trapResult.exception == nullptr) {
                 printf("Execute WASM returned nullptr (in wabt::CommandType::AssertUnlinkable case)\n");
                 printf("Expected exception:%s\n", assertUnlinkable->text.data());

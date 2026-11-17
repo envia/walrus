@@ -188,8 +188,10 @@ Instance* Module::instantiate(ExecutionState& state, const ExternVector& imports
         }
         case ImportType::Global: {
             if (UNLIKELY(imports[i]->kind() != Object::GlobalKind
-                         || !m_imports[i]->globalType()->type().isSubType(imports[i]->asGlobal()->type())
-                         || m_imports[i]->globalType()->isMutable() != imports[i]->asGlobal()->isMutable())) {
+                         || !imports[i]->asGlobal()->type().isSubType(m_imports[i]->globalType()->type())
+                         || m_imports[i]->globalType()->isMutable() != imports[i]->asGlobal()->isMutable()
+                         || (m_imports[i]->globalType()->isMutable()
+                             && !m_imports[i]->globalType()->type().isSubType(imports[i]->asGlobal()->type())))) {
                 Trap::throwException("incompatible global import type");
             }
 
@@ -198,7 +200,8 @@ Instance* Module::instantiate(ExecutionState& state, const ExternVector& imports
         }
         case ImportType::Table: {
             if (UNLIKELY(imports[i]->kind() != Object::TableKind
-                         || m_imports[i]->tableType()->type() != imports[i]->asTable()->type()
+                         || !imports[i]->asTable()->type().isSubType(m_imports[i]->tableType()->type())
+                         || !m_imports[i]->tableType()->type().isSubType(imports[i]->asTable()->type())
                          || m_imports[i]->tableType()->initialSize() > imports[i]->asTable()->size()
                          || m_imports[i]->tableType()->maximumSize() < imports[i]->asTable()->maximumSize()
                          || m_imports[i]->tableType()->is64() != imports[i]->asTable()->is64())) {
@@ -222,7 +225,7 @@ Instance* Module::instantiate(ExecutionState& state, const ExternVector& imports
         }
         case ImportType::Tag: {
             if (UNLIKELY(imports[i]->kind() != Object::TagKind
-                         || !imports[i]->asTag()->functionType()->equals(m_imports[i]->tagType()->functionType(), true))) {
+                         || !imports[i]->asTag()->functionType()->equals(m_imports[i]->tagType()->functionType()))) {
                 Trap::throwException("incompatible tag import type");
             }
             instance->m_tags[tagIndex++] = imports[i]->asTag();
